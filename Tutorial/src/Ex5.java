@@ -128,7 +128,7 @@ public class Ex5 {
                     whiteMove = !whiteMove;
                     System.out.println("__________________________________");
                 } else {
-                    System.out.println("that wasn't a legal move");
+                    System.out.println("That wasn't a legal move.");
                 }
             }
 
@@ -164,7 +164,7 @@ public class Ex5 {
             System.out.println("");
         }else{
             String taken = overWrittenPiece.getName();
-            System.out.printf("You took the opponent's %s", taken);
+            System.out.printf("You took the opponent's %s \n", taken);
         }
         // place a piece of the type of selectedPiece at the destination address
         board[startEnd[1][0]][startEnd[1][1]] = selectedPiece;
@@ -184,11 +184,11 @@ public class Ex5 {
         switch(selectedPiece) {
             case BLACK_PAWN:
                 // opening
-                if (end[0] < 3 && end[1] == start[1]) {
+                if (end[0] <= 3 && end[1] == start[1]) {
                     legal = true;
                 }
                 // regular play
-                else if (end[0] == start[0] + 1 && end[1] == start[1]) {
+                else if (end[0] == start[0] + 1 && end[1] == start[1] && !destinationPiece.getCol().equals("n")) {
                     legal = true;
                 }
                 // taking an opponent's piece
@@ -199,10 +199,10 @@ public class Ex5 {
                 break;
             case WHITE_PAWN:
                 // opening
-                if (end[0] > 4 && end[1] == start[1]) {
+                if (end[0] >= 4 && end[1] == start[1]) {
                     legal = true;
                 //regular play
-                }else if (end[0] == start[0] - 1) {
+                }else if (end[0] == start[0] - 1 && end[1] == start[1] && !destinationPiece.getCol().equals("n")) {
                     legal = true;
                 }
                 // taking an opponent's piece
@@ -214,11 +214,80 @@ public class Ex5 {
             case WHITE_ROOK:
                 if (end[0] == start[0] || end[1] == start[1]) {
                     legal = true;
+                    // prevent rook from jumping over pieces
+                    if((end[0]-start[0])>0){//i.e rook went vertically down
+                        for(int i=1; i<=Math.abs(end[0]-start[0]); i++){
+                            // look at the type of piece at every square along the path from start to end
+                            Chessmen testPiece = board[start[0]+i][start[1]]; // notice PLUS
+                            if(!testPiece.getCol().equals("n")){
+                                legal = false;
+                            }
+                        }
+                    }
+                    if((end[0]-start[0])<0){//i.e rook went vertically up
+                        for(int i=1; i<=Math.abs(end[0]-start[0]); i++){
+                            Chessmen testPiece = board[start[0]-i][start[1]]; // notice MINUS
+                            if(!testPiece.getCol().equals("n")){
+                                legal = false;
+                            }
+                        }
+                    }
+                    if((end[1]-start[1])<0){//i.e rook went horizontally left
+                        for(int i=1; i<=Math.abs(end[1]-start[1]); i++){
+                            Chessmen testPiece = board[start[1]][start[1]-i]; // notice MINUS
+                            if(!testPiece.getCol().equals("n")){
+                                legal = false;
+                            }
+                        }
+                    }
+                    if((end[1]-start[1])<0){//i.e rook went horizontally right
+                        for(int i=1; i<=Math.abs(end[1]-start[1]); i++){
+                            Chessmen testPiece = board[start[1]][start[1]+i]; // notice PLUS
+                            if(!testPiece.getCol().equals("n")){
+                                legal = false;
+                            }
+                        }
+                    }
+
                 }
                 break;
             case BLACK_ROOK:
                 if (end[0] == start[0] || end[1] == start[1]) {
                     legal = true;
+                }
+                // prevent rook from jumping over pieces
+                if((end[0]-start[0])>0){//i.e rook went vertically down
+                    for(int i=1; i<=Math.abs(end[0]-start[0]); i++){
+                        // look at the type of piece at every square along the path from start to end
+                        Chessmen testPiece = board[start[0]+i][start[1]]; // notice PLUS
+                        if(!testPiece.getCol().equals("n")){
+                            legal = false;
+                        }
+                    }
+                }
+                if((end[0]-start[0])<0){//i.e rook went vertically up
+                    for(int i=1; i<=Math.abs(end[0]-start[0]); i++){
+                        Chessmen testPiece = board[start[0]-i][start[1]]; // notice MINUS
+                        if(!testPiece.getCol().equals("n")){
+                            legal = false;
+                        }
+                    }
+                }
+                if((end[1]-start[1])<0){//i.e rook went horizontally left
+                    for(int i=1; i<=Math.abs(end[1]-start[1]); i++){
+                        Chessmen testPiece = board[start[1]][start[1]-i]; // notice MINUS
+                        if(!testPiece.getCol().equals("n")){
+                            legal = false;
+                        }
+                    }
+                }
+                if((end[1]-start[1])<0){//i.e rook went horizontally right
+                    for(int i=1; i<=Math.abs(end[1]-start[1]); i++){
+                        Chessmen testPiece = board[start[1]][start[1]+i]; // notice PLUS
+                        if(!testPiece.getCol().equals("n")){
+                            legal = false;
+                        }
+                    }
                 }
                 break;
             case WHITE_BISHOP:
@@ -258,12 +327,12 @@ public class Ex5 {
                 }
                 break;
             case WHITE_KING:
-                if (Math.abs(end[0] - start[0]) <= 1 || Math.abs(end[1] - start[1]) <= 1) {
+                if (Math.abs(end[0] - start[0]) <= 1 && Math.abs(end[1] - start[1]) <= 1) {
                     legal = true;
                 }
                 break;
             case BLACK_KING:
-                if (Math.abs(end[0] - start[0]) <= 1 || Math.abs(end[1] - start[1]) <= 1) {
+                if (Math.abs(end[0] - start[0]) <= 1 && Math.abs(end[1] - start[1]) <= 1) {
                     legal = true;
                 }
                 break;
@@ -275,6 +344,10 @@ public class Ex5 {
         String col = selectedPiece.getCol();
         if(wMove && col.equals("b")){legal = false;}
         if(!wMove && col.equals("w")){legal = false;}
+
+        // disallow "taking your own pieces"
+        if(wMove && destinationPiece.getCol().equals("w")){legal = false;}
+        if(!wMove && destinationPiece.getCol().equals("b")){legal = false;}
 
         return legal;
     }
