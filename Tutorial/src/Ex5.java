@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Scanner;
@@ -63,6 +64,9 @@ public class Ex5 {
     public static void main(String[] args) {
         Chessmen[][] chessboard = new Chessmen[8][8];
 
+        ArrayList<String> capturedByBlack = new ArrayList<String>();
+        ArrayList<String> capturedByWhite = new ArrayList<String>();
+
         for (Chessmen piece : Chessmen.values()) {
             int[] position = piece.getPosition();
 
@@ -96,35 +100,28 @@ public class Ex5 {
         boolean whiteMove = true;
 
         Utilities u = new Utilities();
-        //System.out.print(u.addressToIndex("h8")[0]);
-        //System.out.print(u.addressToIndex("h8")[1]);
-        //System.out.print(u.parseMove("a3 to g7")[0][0]);
-        //System.out.println(u.parseMove("a3 to g7")[0][1]);
-        //System.out.print(u.parseMove("a3 to g7")[1][0]);
-        //System.out.println(u.parseMove("a3 to g7")[1][1]);
-
-        //String mv = "a2 to b4";
-        ///int[][] stEd = u.parseMove(mv);
-        //move(stEd, chessboard);
-
-        //drawBoard(chessboard);
-
         Scanner sc = new Scanner(System.in);
+        //initialize board
         drawBoard(chessboard);
 
-        while(running == true){
+        int turns = 0;
+
+        while(running){
             // determine whose move it is (white begins)
-            if(whiteMove == true) {System.out.println("White's move.");}else{System.out.println("Black's move.");}
+            if(whiteMove) {System.out.println("White's move.");}else{System.out.println("Black's move.");}
             System.out.println("Please enter a move in the form <letter><number> to <letter><number>. For example: a3 to c6");
             String mv = sc.nextLine();
-            if(mv.equals("exit")){
+            //add in extra commands
+            if(mv.equals("exit")) {
                 running = false;
                 System.exit(0);
+            }else if(mv.equals("turns")) {
+                System.out.printf("turns taken: %d", turns);
             }else {
                 // extract the numeric information about the proposed move from the user inputted string
                 int[][] stEd = u.parseMove(mv);
                 // decide whether it's a legal move or not
-                boolean legal = isItLegal(stEd, chessboard, whiteMove);
+                boolean legal = isItLegal(stEd, chessboard, whiteMove, turns);
                 if (legal == true) {
                     move(stEd, chessboard);
                     drawBoard(chessboard);
@@ -166,8 +163,8 @@ public class Ex5 {
         if(overWrittenPiece == Chessmen.EMPTY){
             System.out.println("");
         }else{
-            System.out.print("You took the opponent's ");
-            System.out.println(overWrittenPiece.getName());
+            String taken = overWrittenPiece.getName();
+            System.out.printf("You took the opponent's %s", taken);
         }
         // place a piece of the type of selectedPiece at the destination address
         board[startEnd[1][0]][startEnd[1][1]] = selectedPiece;
@@ -176,20 +173,41 @@ public class Ex5 {
     }
 
     // define a method to decide whether a move is legal or not
-    public static boolean isItLegal(int[][] startEnd, Chessmen[][] board, boolean wMove){
+    public static boolean isItLegal(int[][] startEnd, Chessmen[][] board, boolean wMove, int turns){
         boolean legal = false;
         Chessmen selectedPiece = board[startEnd[0][0]][startEnd[0][1]];
         int[] start = startEnd[0];
         int[] end = startEnd[1];
+        Chessmen destinationPiece = board[end[0]][end[1]];
+        ArrayList<Chessmen> path = new ArrayList<Chessmen>();
 
         switch(selectedPiece) {
             case BLACK_PAWN:
-                if (end[0] == start[0] + 1) {
+                // opening
+                if (end[0] < 3 && end[1] == start[1]) {
+                    legal = true;
+                }
+                // regular play
+                else if (end[0] == start[0] + 1 && end[1] == start[1]) {
+                    legal = true;
+                }
+                // taking an opponent's piece
+                else if (end[0] == start[0] + 1 && Math.abs(end[1] - start[1]) == 1
+                        && destinationPiece.getCol().equals("w")) {
                     legal = true;
                 }
                 break;
             case WHITE_PAWN:
-                if (end[0] == start[0] - 1) {
+                // opening
+                if (end[0] > 4 && end[1] == start[1]) {
+                    legal = true;
+                //regular play
+                }else if (end[0] == start[0] - 1) {
+                    legal = true;
+                }
+                // taking an opponent's piece
+                else if (end[0] == start[0] - 1 && Math.abs(end[1] - start[1]) == 1
+                        && destinationPiece.getCol().equals("b")) {
                     legal = true;
                 }
                 break;
@@ -214,12 +232,14 @@ public class Ex5 {
                 }
                 break;
             case WHITE_KNIGHT:
-                if ((Math.abs(end[0] - start[0]) == 2 && Math.abs(end[1] - start[1]) == 1) || (Math.abs(end[0] - start[0]) == 1 && Math.abs(end[1] - start[1]) == 2)) {
+                if ((Math.abs(end[0] - start[0]) == 2 && Math.abs(end[1] - start[1]) == 1)
+                        || (Math.abs(end[0] - start[0]) == 1 && Math.abs(end[1] - start[1]) == 2)) {
                     legal = true;
                 }
                 break;
             case BLACK_KNIGHT:
-                if ((Math.abs(end[0] - start[0]) == 2 && Math.abs(end[1] - start[1]) == 1) || (Math.abs(end[0] - start[0]) == 1 && Math.abs(end[1] - start[1]) == 2)) {
+                if ((Math.abs(end[0] - start[0]) == 2 && Math.abs(end[1] - start[1]) == 1)
+                        || (Math.abs(end[0] - start[0]) == 1 && Math.abs(end[1] - start[1]) == 2)) {
                     legal = true;
                 }
                 break;
@@ -253,8 +273,8 @@ public class Ex5 {
 
         // disallow players from stealing each others' moves
         String col = selectedPiece.getCol();
-        if(wMove==true && col.equals("b")){legal = false;}
-        if(wMove==false && col.equals("w")){legal = false;}
+        if(wMove && col.equals("b")){legal = false;}
+        if(!wMove && col.equals("w")){legal = false;}
 
         return legal;
     }
@@ -276,8 +296,8 @@ class Utilities {
         return letterToNumber;
     }
 
-    // define a method to turn string representations of square addresses into java.array indices
-    // a8 -> 00; b6 -> 21 etc.
+    // define a method to turn string representations of square addresses into java array indices
+    // e.g. a8 -> 00; b6 -> 21 etc.
     public static int[] addressToIndex(String address) {
         Map m = map();
         String[] pair = address.split("");
